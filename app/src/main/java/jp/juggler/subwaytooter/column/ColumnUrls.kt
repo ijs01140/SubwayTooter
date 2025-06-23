@@ -21,6 +21,7 @@ private const val PATH_LOCAL = "/api/v1/timelines/public?local=true&limit=${ApiP
 fun Column.makeHomeTlUrl(): String {
     return when {
         accessInfo.isMisskey -> "/api/notes/timeline"
+        accessInfo.apiHost.ascii == "truthsocial.com" -> "/api/v1/timelines/following?limit=${ApiPath.READ_LIMIT}"
         withAttachment -> "$PATH_HOME&only_media=true"
         else -> PATH_HOME
     }
