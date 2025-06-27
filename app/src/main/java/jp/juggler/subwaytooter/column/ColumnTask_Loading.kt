@@ -1140,15 +1140,36 @@ class ColumnTask_Loading(
                 ?: return TootApiResult("TootStatus parse failed.")
 
             // 前後の会話
-            result = client.request(
-                "/api/v1/statuses/${column.statusId}/context${
-                    when (withReference) {
-                        true -> "?with_reference=true"
-                        else -> ""
-                    }
-                }"
-            )
-            jsonObject = result?.jsonObject ?: return result
+            if (accessInfo.apiHost.ascii == "truthsocial.com"){
+                // TruthSocialではancestorsとdescendantsが分割されており、直接contextをまとめて取得できない
+                // withReferenceはFedibird特有なので不要
+
+                // ancestors
+                // なぜかWebUIではancestorsが取得できていない
+                result = client.request(
+                    "/api/v2/statuses/${column.statusId}/context/ancestors"
+                )
+                var jsonArray = result?.jsonArray ?: return result
+                jsonObject["ancestors"] = jsonArray
+
+                // descendants
+                result = client.request(
+                    "/api/v2/statuses/${column.statusId}/context/descendants"
+                )
+                jsonArray = result?.jsonArray ?: return result
+                jsonObject["descendants"] = jsonArray
+            } else {
+                // 通常のMastodon APIはこっち
+                result = client.request(
+                    "/api/v1/statuses/${column.statusId}/context${
+                        when (withReference) {
+                            true -> "?with_reference=true"
+                            else -> ""
+                        }
+                    }"
+                )
+                jsonObject = result?.jsonObject ?: return result
+            }
             val conversationContext =
                 parseItem(jsonObject) { TootContext(parser, it) }
 
