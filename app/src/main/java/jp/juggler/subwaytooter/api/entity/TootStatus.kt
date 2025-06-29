@@ -1092,7 +1092,10 @@ class TootStatus(
                     removeQt -> {
                         log.d("removeQt? $sv")
                         val reQuoteTootRemover =
-                            """(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
+                            when(account.apiHost.ascii){
+                                "truthsocial.com" -> """<span class="quote-inline"><br/>RT: .*?</span>""".toRegex()
+                                else -> """(?:\s|<br/>)*QT:\s*\[[^]]+]((?:</\w+>)*)\z""".toRegex()
+                            }
                         sv.replace(reQuoteTootRemover) {
                             it.groupValues.elementAtOrNull(1) ?: ""
                         }.also { after ->
