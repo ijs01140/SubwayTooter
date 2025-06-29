@@ -1084,7 +1084,7 @@ class TootStatus(
             // Hostdon QT と通常のreblogが同時に出ることはないので、quoteが既出ならreblogのjsonデータは見ない
             val reblog = quote ?: parser.status(src.jsonObject("reblog"))
 
-            val removeQt = false
+            val removeQt = isQuoteToot
 
             // content
             val content = src.string("content")?.let { sv ->
